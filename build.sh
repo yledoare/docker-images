@@ -7,5 +7,6 @@ do
   cd $image
   echo "Build $image"
   [ ! -e $EXPORT_IMAGES/$image.img ] && docker build -t $image . && docker save -o $EXPORT_IMAGES/$image.img $image
+  [ ! -e $EXPORT_IMAGES/$image.img ] && exit 1 
   cd ..
 done

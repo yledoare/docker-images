@@ -1,7 +1,9 @@
 FROM php:8-apache
 
+RUN apt-get update -y 
 RUN apt-get install -y libgssapi-krb5-2
 RUN apt-get install -y unixodbc-dev
+RUN apt-get install -y gnupg2
 RUN pecl install sqlsrv
 RUN pecl install pdo_sqlsrv
 RUN echo extension=pdo_sqlsrv.so >> `php --ini | grep "Scan for additional .ini files" | sed -e "s|.*:\s*||"`/10_pdo_sqlsrv.ini

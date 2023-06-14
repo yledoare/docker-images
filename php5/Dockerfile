@@ -23,12 +23,10 @@ RUN apt-get update -y \
         apt-utils libcurl4-openssl-dev wget
 RUN docker-php-ext-install calendar intl mysql gd soap zip
 
-RUN wget  --no-check-certificate https://curl.haxx.se/download/curl-7.52.1.tar.gz
+RUN wget --no-check-certificate https://curl.haxx.se/download/curl-7.52.1.tar.gz
 RUN tar xzvf curl-7.52.1.tar.gz
-RUN cd curl-7.52.1
-RUN  ./configure --prefix=/usr/
-RUN  make && make install && cd ..
-RUN  docker-php-ext-install curl
+RUN cd curl-7.52.1 && ./configure --prefix=/usr/ && make && make install && cd ..
+RUN docker-php-ext-install curl
 
 COPY docker-run.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-run.sh
