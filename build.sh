@@ -6,7 +6,10 @@ do
   test -d $image || continue
   cd $image
   echo "Build $image"
-  [ ! -e $EXPORT_IMAGES/$image.img ] && docker build -t $image . && docker save -o $EXPORT_IMAGES/$image.img $image
-  [ ! -e $EXPORT_IMAGES/$image.img ] && exit 1 
+  [ -e $EXPORT_IMAGES/$image.img ] && cd .. && continue
+  docker build -t $image .
+  echo docker save -o $EXPORT_IMAGES/$image.img $image
+  docker save -o $EXPORT_IMAGES/$image.img $image || exit 1
+  chmod 755 $EXPORT_IMAGES/$image.img 
   cd ..
 done
