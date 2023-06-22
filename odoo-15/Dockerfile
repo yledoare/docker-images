@@ -1,4 +1,4 @@
-FROM debian:bookworm-slim
+FROM ubuntu:jammy
 MAINTAINER Yann Le Doaré <odoo-services@linuxconsole.org>
 
 SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
@@ -7,8 +7,8 @@ SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
 ENV LANG C.UTF-8
 
 # Install some deps, lessc and less-plugin-clean-css, and wkhtmltopdf
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+RUN apt-get update
+RUN apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
         dirmngr \
@@ -16,8 +16,9 @@ RUN apt-get update && \
         gnupg \
         libssl-dev \
         node-less \
-        npm \
-        python3-num2words \
+        npm 
+
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y python3-num2words \
         python3-pdfminer \
         python3-pip \
         python3-phonenumbers \
@@ -31,27 +32,13 @@ RUN apt-get update && \
         python3-xlrd \
         python3-xlwt \
         xz-utils 
-RUN curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb \
-    && echo 'e9f95436298c77cc9406bd4bbd242f4771d0a4b2 wkhtmltox.deb' | sha1sum -c - \
+
+RUN apt-get install -y postgresql-client-14
+
+RUN curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.jammy_amd64.deb \
+    && echo '967390a759707337b46d1c02452e2bb6b2dc6d59 wkhtmltox.deb' | sha1sum -c - \
     && apt-get install -y --no-install-recommends ./wkhtmltox.deb \
     && rm -rf /var/lib/apt/lists/* wkhtmltox.deb
-
-# install latest postgresql-client
-RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
-    && GNUPGHOME="$(mktemp -d)" \
-    && export GNUPGHOME \
-    && repokey='B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8' \
-    && gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "${repokey}" \
-    && gpg --batch --armor --export "${repokey}" > /etc/apt/trusted.gpg.d/pgdg.gpg.asc \
-    && gpgconf --kill all \
-    && rm -rf "$GNUPGHOME" \
-    && apt-get update  \
-    && apt-get install --no-install-recommends -y postgresql-client \
-    && rm -f /etc/apt/sources.list.d/pgdg.list \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install rtlcss (on Debian buster)
-RUN npm install -g rtlcss
 
 # Install Odoo
 ENV ODOO_VERSION 15.0
