@@ -1,4 +1,4 @@
-FROM ubuntu:jammy
+FROM ubuntu:lunar
 MAINTAINER Yann Le Doaré <odoo-services@linuxconsole.org>
 
 SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
@@ -33,7 +33,7 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y python3-num2wor
         python3-xlwt \
         xz-utils 
 
-RUN apt-get install -y postgresql-client-14
+RUN apt-get install -y postgresql-client
 
 RUN curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.jammy_amd64.deb \
     && echo '967390a759707337b46d1c02452e2bb6b2dc6d59 wkhtmltox.deb' | sha1sum -c - \
