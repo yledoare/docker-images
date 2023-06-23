@@ -33,7 +33,7 @@ RUN apt-get install -y python3-pip
 RUN apt-get install -y postgresql-client
 RUN apt-get install -y libpq-dev
 RUN apt-get install -y libldap-dev libsasl2-dev
-RUN apt-get install -y wget
+RUN apt-get install -y wget libxrender1
 
 # Install Odoo
 ENV ODOO_VERSION 16.0
@@ -48,6 +48,8 @@ COPY ./entrypoint.sh /
 COPY ./odoo.conf /etc/odoo/
 RUN useradd odoo
 # Set permissions and Mount /var/lib/odoo to allow restoring filestore and /mnt/extra-addons for users addons
+RUN install -d /var/lib/odoo
+RUN chown odoo /var/lib/odoo
 RUN chown odoo /etc/odoo/odoo.conf \
     && mkdir -p /mnt/extra-addons \
     && chown -R odoo /mnt/extra-addons
@@ -66,7 +68,6 @@ ENV PIP_ROOT_USER_ACTION=ignore
 RUN pip3 install --upgrade pip
 RUN pip install --upgrade pip setuptools wheel
 RUN wget https://raw.githubusercontent.com/odoo/odoo/16.0/requirements.txt && pip3 install -r requirements.txt
-RUN chown odoo /var/lib/odoo
 
 USER odoo
 ENTRYPOINT ["/entrypoint.sh"]
