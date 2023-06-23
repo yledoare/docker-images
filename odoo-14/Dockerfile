@@ -17,8 +17,10 @@ RUN apt-get update && \
         libssl-dev \
         node-less \
         npm \
-        xz-utils \
-	odoo-14 
+        xz-utils wget
+
+RUN wget http://security.debian.org/debian-security/pool/updates/main/o/odoo/odoo-14_14.0.0+dfsg.2-7+deb11u1_all.deb
+RUN apt-get install -y ./odoo-14_14.0.0+dfsg.2-7+deb11u1_all.deb
 
 RUN curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.buster_amd64.deb \
     && echo 'ea8277df4297afc507c61122f3c349af142f31e5 wkhtmltox.deb' | sha1sum -c - \
