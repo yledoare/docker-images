@@ -1,5 +1,5 @@
 FROM debian:bullseye-slim
-MAINTAINER Odoo S.A. <info@odoo.com>
+MAINTAINER Yann Le Doaré <odoo-services@linuxconsole.org>
 
 SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
 
@@ -17,43 +17,23 @@ RUN apt-get update && \
         libssl-dev \
         node-less \
         npm \
-        python3-magic \
-        python3-num2words \
-        python3-odf \
-        python3-pdfminer \
-        python3-pip \
-        python3-phonenumbers \
-        python3-pyldap \
-        python3-qrcode \
-        python3-renderpm \
-        python3-setuptools \
-        python3-slugify \
-        python3-vobject \
-        python3-watchdog \
-        python3-xlrd \
-        python3-xlwt \
-        xz-utils \
-    && curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.buster_amd64.deb \
-    && echo 'ea8277df4297afc507c61122f3c349af142f31e5 wkhtmltox.deb' | sha1sum -c - \
-    && apt-get install -y --no-install-recommends ./wkhtmltox.deb \
-    && rm -rf /var/lib/apt/lists/* wkhtmltox.deb
+        xz-utils
 
-# install latest postgresql-client
-RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
-    && GNUPGHOME="$(mktemp -d)" \
-    && export GNUPGHOME \
-    && repokey='B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8' \
-    && gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "${repokey}" \
-    && gpg --batch --armor --export "${repokey}" > /etc/apt/trusted.gpg.d/pgdg.gpg.asc \
-    && gpgconf --kill all \
-    && rm -rf "$GNUPGHOME" \
-    && apt-get update  \
-    && apt-get install --no-install-recommends -y postgresql-client \
-    && rm -f /etc/apt/sources.list.d/pgdg.list \
-    && rm -rf /var/lib/apt/lists/*
+RUN curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.bullseye_amd64.deb \
+    && echo 'cecbf5a6abbd68d324a7cd6c51ec843d71e98951 wkhtmltox.deb' | sha1sum -c - \
+    && dpkg -x ./wkhtmltox.deb /
+RUN rm wkhtmltox.deb
 
-# Install rtlcss (on Debian buster)
-RUN npm install -g rtlcss
+RUN curl -o libssl1.deb -sSL http://security.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.1_1.1.1n-0+deb11u5_amd64.deb \
+    && echo 'e8a80e4821679f43e796d2932830be21ab484344 libssl1.deb' | sha1sum -c - \
+    && dpkg -x ./libssl1.deb /
+RUN rm libssl1.deb
+
+RUN apt-get install -y python3-pip
+RUN apt-get install -y postgresql-client
+RUN apt-get install -y libpq-dev
+RUN apt-get install -y libldap-dev libsasl2-dev
+RUN apt-get install -y wget
 
 # Install Odoo
 ENV ODOO_VERSION 16.0
@@ -61,14 +41,12 @@ ARG ODOO_RELEASE=20230613
 ARG ODOO_SHA=5cd43e65a2c3836894e14fc902a935bf84c64877
 RUN curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
     && echo "${ODOO_SHA} odoo.deb" | sha1sum -c - \
-    && apt-get update \
-    && apt-get -y install --no-install-recommends ./odoo.deb \
-    && rm -rf /var/lib/apt/lists/* odoo.deb
+    && dpkg -x odoo.deb /
 
 # Copy entrypoint script and Odoo configuration file
 COPY ./entrypoint.sh /
 COPY ./odoo.conf /etc/odoo/
-
+RUN useradd odoo
 # Set permissions and Mount /var/lib/odoo to allow restoring filestore and /mnt/extra-addons for users addons
 RUN chown odoo /etc/odoo/odoo.conf \
     && mkdir -p /mnt/extra-addons \
@@ -83,8 +61,13 @@ ENV ODOO_RC /etc/odoo/odoo.conf
 
 COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
 
-# Set default user when running the container
-USER odoo
+ENV PIP_ROOT_USER_ACTION=ignore
 
+RUN pip3 install --upgrade pip
+RUN pip install --upgrade pip setuptools wheel
+RUN wget https://raw.githubusercontent.com/odoo/odoo/16.0/requirements.txt && pip3 install -r requirements.txt
+RUN chown odoo /var/lib/odoo
+
+USER odoo
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["odoo"]
