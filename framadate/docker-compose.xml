@@ -1,0 +1,34 @@
+version: "2"
+services:
+  framadate-db:
+    container_name: framadate-db
+    image: mysql:5.7
+    command: --sql-mode="ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"
+    volumes:
+      - ./volumes/db/data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=motdepasseroot
+      - MYSQL_USER=framadate
+      - MYSQL_PASSWORD=framadatedbpassword
+      - MYSQL_DATABASE=framadate
+    restart: always
+
+  framadate:
+    container_name: framadate
+    image: framadate
+    links:
+      - framadate-db:mysql
+    ports:
+      - 8320:80
+    environment:
+      - DOMAIN=localhost
+      - APP_NAME=Framadate
+      - ADMIN_MAIL=mon@email.fr
+      - MYSQL_USER=framadate
+      - MYSQL_PASSWORD=framadatedbpassword
+      - MYSQL_DB=framadate
+      - MYSQL_HOST=mysql
+      - ADMIN_USER=admin
+      - ADMIN_PASSWORD=adminpassword
+      - DISABLE_SMTP=true
+    restart: always
