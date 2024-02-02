@@ -21,7 +21,7 @@ services:
     ports:
       - 8320:80
     environment:
-      - DOMAIN=localhost
+      - DOMAIN=https://www.adn-bzh.org
       - APP_NAME=Framadate
       - ADMIN_MAIL=mon@email.fr
       - MYSQL_USER=framadate
