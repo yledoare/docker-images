@@ -1,0 +1,82 @@
+# You can override the included template(s) by including variable overrides
+# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
+# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
+# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
+# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
+# Note that environment variables can be set in several places
+# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
+image: docker:24
+include:
+- template: Security/Container-Scanning.gitlab-ci.yml
+- template: Security/Secret-Detection.gitlab-ci.yml
+container_scanning:
+  variables:
+    CS_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH"
+    CS_DOCKERFILE_PATH: "$CI_COMMIT_BRANCH.Dockerfile"
+    GIT_STRATEGY: fetch
+docker-build-10.0:
+  image: docker:24
+  stage: build
+  services:
+  - docker:24-dind
+  before_script:
+  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+  - docker build --pull -f 10.0.Dockerfile -t "$CI_REGISTRY_IMAGE:10.0" .
+  - docker push "$CI_REGISTRY_IMAGE:10.0"
+  only:
+  - '10.0'
+docker-build-12.0:
+  image: docker:24
+  stage: build
+  services:
+  - docker:24-dind
+  before_script:
+  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+  - docker build --pull -f 12.0.Dockerfile -t "$CI_REGISTRY_IMAGE:12.0" .
+  - docker build --pull -f 12.0_ml.Dockerfile -t "$CI_REGISTRY_IMAGE:12.0_ml" .
+  - docker build --pull -f 12.0_py3.6.Dockerfile -t "$CI_REGISTRY_IMAGE:12.0_py3.6"
+    .
+  - docker push "$CI_REGISTRY_IMAGE:12.0"
+  - docker push "$CI_REGISTRY_IMAGE:12.0_ml"
+  - docker push "$CI_REGISTRY_IMAGE:12.0_py3.6"
+  only:
+  - '12.0'
+docker-build-14.0:
+  image: docker:24
+  stage: build
+  services:
+  - docker:24-dind
+  before_script:
+  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+  - docker build --pull -f 14.0.Dockerfile -t "$CI_REGISTRY_IMAGE:14.0" .
+  - docker push "$CI_REGISTRY_IMAGE:14.0"
+  only:
+  - '14.0'
+docker-build-16.0:
+  image: docker:24
+  stage: build
+  services:
+  - docker:24-dind
+  before_script:
+  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+  - docker build --pull -f 16.0.Dockerfile -t "$CI_REGISTRY_IMAGE:16.0" .
+  - docker push "$CI_REGISTRY_IMAGE:16.0"
+  only:
+  - '16.0'
+# docker-build-16.0-scratch:
+#   image: docker:24
+#   stage: build
+#   services:
+#   - docker:24-dind
+#   before_script:
+#   - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+#   script:
+#   - docker build --pull -f 16.0-scratch.Dockerfile -t "$CI_REGISTRY_IMAGE:16.0-scratch"
+#     .
+#   - docker push "$CI_REGISTRY_IMAGE:16.0-scratch"
+#   only:
+#   - '16.0'
