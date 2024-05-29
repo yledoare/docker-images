@@ -7,7 +7,7 @@ do
   cd $image
   echo "Build $image"
   [ -e $EXPORT_IMAGES/$image.img ] && cd .. && continue
-  docker build -t $image .
+  docker build -t $image . || exit 1
   echo docker save -o $EXPORT_IMAGES/$image.img $image
   docker save -o $EXPORT_IMAGES/$image.img $image || exit 1
   chmod 755 $EXPORT_IMAGES/$image.img 
