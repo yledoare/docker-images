@@ -1,7 +1,7 @@
 EXPORT_IMAGES=$PWD
 [ -e $HOME/export-images.ini ] && source  $HOME/export-images.ini
 
-ls |grep odoo-17 | while read image
+ls | while read image
 do
   test -d $image || continue
   cd $image
