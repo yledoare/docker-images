@@ -1,4 +1,4 @@
-* Imgages are saved on https://jukebox.linuxconsole.org/docker/
+Images are saved on https://jukebox.linuxconsole.org/docker/
 
 To load an image :
 
