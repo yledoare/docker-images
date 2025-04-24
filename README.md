@@ -1,4 +1,3 @@
-* Saved on https://jukebox.linuxconsole.org/docker/
-To install : 
-
-docker load image_name < image_name.img
+* Imgages are saved on https://jukebox.linuxconsole.org/docker/
+To load an image : 
+docker load < image_name.img
